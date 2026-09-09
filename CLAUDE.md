@@ -19,6 +19,8 @@ Docs: https://docs.getwren.ai/oss · Repo: https://github.com/Canner/WrenAI (CLI
 
 ```
 CLAUDE.md
+README.md               # how to connect Claude Code / Codex / Claude Desktop / ChatGPT
+knowledge-sidora.md     # MDL explanation + sample prompts for the sidora connection (one file per connection)
 .env                    # secrets, NEVER commit (see keys below)
 deploy.sh               # rsync deploy/ + wren-project/ -> terracotta:/opt/wren, write server .env, compose up --build
 deploy/
@@ -53,16 +55,24 @@ wren-project/           # THE Wren project (schema_version 5). Add MDL here.
 
 ### Caddy gotchas (learned the hard way)
 - `/opt/caddy/Caddyfile` is a **single-file bind mount**. `sed -i` (and editors that replace the file) create a new
-  inode the container never sees. Edit **in place**: `cat >> file` to append, or `cat new > /opt/caddy/Caddyfile`.
+  inode the container never sees. A `sed -i` already happened on 2026-09-09, so until Caddy is next recreated the
+  container's copy is a separate inode: after editing the host file, also sync it into the container:
+  `docker exec -i caddy-caddy-1 sh -c 'cat > /etc/caddy/Caddyfile' < /opt/caddy/Caddyfile` (then validate + reload).
+  Recreating the caddy container (`docker compose up -d --force-recreate` in /opt/caddy) re-binds to the host file
+  but briefly drops every site.
 - Reload without restarting (other sites stay up):
   `docker exec -w /etc/caddy caddy-caddy-1 caddy validate && docker exec -w /etc/caddy caddy-caddy-1 caddy reload`
 - Backups live next to it as `Caddyfile.bak-YYYY-MM-DD`.
 
 ### Wren block in Caddy
-`wren.kamisamanosumopod.my.id` → `import block_bots`; requests without `Authorization: Bearer $WREN_MCP_TOKEN` get 401;
-`reverse_proxy wren:8080 { header_up Host 127.0.0.1:8080 }`. The Host rewrite is required: the MCP Python SDK
-enables DNS-rebinding protection at `FastMCP()` construction with allowlist `127.0.0.1:* | localhost:* | [::1]:*`
-and `wren` offers no flag to change it; anything else returns `421 Invalid Host header`.
+`wren.kamisamanosumopod.my.id` → `import block_bots`, then two authenticated routes, else 401:
+1. `Authorization: Bearer $WREN_MCP_TOKEN` → `reverse_proxy wren:8080` (Claude Code, Codex, mcp-remote).
+2. `handle_path /t/$WREN_MCP_TOKEN/*` → same upstream, prefix stripped (ChatGPT and Claude Desktop custom connectors,
+   which only support OAuth or no-auth, so the token rides in the URL).
+Both routes set `header_up Host 127.0.0.1:8080`. That rewrite is required: the MCP Python SDK enables DNS-rebinding
+protection at `FastMCP()` construction with allowlist `127.0.0.1:* | localhost:* | [::1]:*` and `wren` offers no flag
+to change it; anything else returns `421 Invalid Host header`. Reference copy: `deploy/Caddyfile.wren`.
+Client setup docs: `README.md`. Per-connection MDL docs: `knowledge-<connection>.md`.
 
 ## Supabase "sidora"
 
@@ -91,8 +101,8 @@ MCP client (Claude Code, local scope):
 claude mcp add --transport http wren https://wren.kamisamanosumopod.my.id/mcp \
   --header "Authorization: Bearer $WREN_MCP_TOKEN"
 ```
-Smoke test: `curl -s -o /dev/null -w '%{http_code}' https://wren.kamisamanosumopod.my.id/mcp` → 401;
-with the bearer header + JSON-RPC `initialize` body → 200 `text/event-stream`.
+Smoke test: POST a JSON-RPC `initialize` body to `/mcp` → 401 without auth, 200 `text/event-stream` with the bearer
+header, 200 via `/t/$WREN_MCP_TOKEN/mcp`, 401 via `/t/wrong/mcp`.
 
 ## Editing the MDL (the normal loop)
 
@@ -109,4 +119,5 @@ with the bearer header + JSON-RPC `initialize` body → 200 `text/event-stream`.
 - No `memory` extra (pulls PyTorch, +2 GB). Recall tools fall back to plain reads of `knowledge/`. Add `memory-onnx` if recall matters.
 - MCP server is read-only (`store_query` disabled). Add `--allow-write` in `entrypoint.sh` to let agents save queries.
 - `mcp<2` pin: wrenai 0.14.0 still imports `mcp.server.fastmcp` (removed in mcp 2.x). Drop the pin when wrenai upgrades.
-- Auth is a single shared bearer token in Caddy. Rotate by editing `.env` + the Caddyfile block (in place!) + reload.
+- Auth is a single shared bearer token in Caddy, accepted as header or URL path segment. Rotate by editing `.env`, then
+  the Caddyfile block on host **and** through the container (see gotcha), reload, and re-register every client.
