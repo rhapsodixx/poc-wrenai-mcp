@@ -1,0 +1,36 @@
+name: team_members
+table_reference:
+  catalog: ''
+  schema: public
+  table: team_members
+columns:
+- name: id
+  type: UUID
+  not_null: true
+- name: full_name
+  type: TEXT
+  not_null: true
+- name: gitlab_email
+  type: TEXT
+  not_null: true
+- name: group_id
+  type: UUID
+  not_null: true
+- name: employee_type
+  type: TEXT
+  not_null: true
+- name: contract_start_date
+  type: DATE
+- name: contract_end_date
+  type: DATE
+- name: deleted_at
+  type: TIMESTAMPTZ
+- name: created_at
+  type: TIMESTAMPTZ
+  not_null: true
+- name: updated_at
+  type: TIMESTAMPTZ
+  not_null: true
+- name: gitlab_username
+  type: TEXT
+primary_key: id

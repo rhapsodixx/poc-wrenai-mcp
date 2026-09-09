@@ -1,0 +1,30 @@
+name: users
+table_reference:
+  catalog: ''
+  schema: public
+  table: users
+columns:
+- name: id
+  type: UUID
+  not_null: true
+- name: auth_id
+  type: UUID
+  not_null: true
+- name: name
+  type: TEXT
+  not_null: true
+- name: email
+  type: TEXT
+  not_null: true
+- name: role
+  type: TEXT
+  not_null: true
+- name: last_login
+  type: TIMESTAMPTZ
+- name: created_at
+  type: TIMESTAMPTZ
+  not_null: true
+- name: updated_at
+  type: TIMESTAMPTZ
+  not_null: true
+primary_key: id

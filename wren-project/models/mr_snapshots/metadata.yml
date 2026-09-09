@@ -1,0 +1,38 @@
+name: mr_snapshots
+table_reference:
+  catalog: ''
+  schema: public
+  table: mr_snapshots
+columns:
+- name: id
+  type: UUID
+  not_null: true
+- name: team_member_id
+  type: UUID
+  not_null: true
+- name: month
+  type: DATE
+  not_null: true
+- name: mrs_created
+  type: INT
+  not_null: true
+- name: mrs_merged
+  type: INT
+  not_null: true
+- name: approvals_given
+  type: INT
+  not_null: true
+- name: avg_time_to_merge_hours
+  type: DECIMAL(8, 2)
+- name: avg_review_turnaround_hours
+  type: DECIMAL(8, 2)
+- name: synced_at
+  type: TIMESTAMPTZ
+  not_null: true
+- name: created_at
+  type: TIMESTAMPTZ
+  not_null: true
+- name: updated_at
+  type: TIMESTAMPTZ
+  not_null: true
+primary_key: id

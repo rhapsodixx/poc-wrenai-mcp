@@ -1,0 +1,18 @@
+services:
+  wren:
+    build: .
+    image: wren-mcp:local
+    container_name: wren
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "8080"
+    volumes:
+      - ./project:/project
+    mem_limit: 1.5g
+    networks:
+      - web
+networks:
+  web:
+    external: true

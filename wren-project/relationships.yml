@@ -1,0 +1,19 @@
+relationships:
+- name: cc_snapshots_team_members
+  models:
+  - cc_snapshots
+  - team_members
+  join_type: many_to_one
+  condition: cc_snapshots.team_member_id = team_members.id
+- name: mr_snapshots_team_members
+  models:
+  - mr_snapshots
+  - team_members
+  join_type: many_to_one
+  condition: mr_snapshots.team_member_id = team_members.id
+- name: team_members_groups
+  models:
+  - team_members
+  - groups
+  join_type: many_to_one
+  condition: team_members.group_id = groups.id

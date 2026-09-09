@@ -1,0 +1,25 @@
+name: gitlab_groups
+table_reference:
+  catalog: ''
+  schema: public
+  table: gitlab_groups
+columns:
+- name: id
+  type: UUID
+  not_null: true
+- name: gitlab_group_id
+  type: INT
+  not_null: true
+- name: name
+  type: TEXT
+  not_null: true
+- name: path
+  type: TEXT
+  not_null: true
+- name: created_at
+  type: TIMESTAMPTZ
+  not_null: true
+- name: updated_at
+  type: TIMESTAMPTZ
+  not_null: true
+primary_key: id

@@ -1,0 +1,7 @@
+# Supabase "sidora" via Supavisor session-mode pooler (direct host is IPv6-only; VPS has no IPv6)
+datasource: postgres
+host: ${POSTGRES_HOST}
+port: ${POSTGRES_PORT}
+database: ${POSTGRES_DATABASE}
+user: ${POSTGRES_USER}
+password: ${POSTGRES_PASSWORD}
