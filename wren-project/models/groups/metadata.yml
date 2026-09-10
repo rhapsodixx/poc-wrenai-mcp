@@ -3,6 +3,8 @@ table_reference:
   catalog: ''
   schema: public
   table: groups
+properties:
+  description: Engineering teams (Backend, Frontend, DevOps, Data, Quality, Product, Engineering, External). One row per team.
 columns:
 - name: id
   type: UUID
@@ -10,9 +12,13 @@ columns:
 - name: name
   type: TEXT
   not_null: true
+  properties:
+    description: Team name.
 - name: color
   type: TEXT
   not_null: true
+  properties:
+    description: Hex colour used by the dashboard.
 - name: created_at
   type: TIMESTAMPTZ
   not_null: true

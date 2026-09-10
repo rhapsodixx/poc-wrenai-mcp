@@ -1,0 +1,7 @@
+# Minimal base Caddyfile for a fresh server. deploy/caddy-apply.sh appends the wren block below this.
+(block_bots) {
+	header X-Robots-Tag "noindex, nofollow, noarchive"
+	handle /robots.txt {
+		respond "User-agent: *\nDisallow: /\n" 200
+	}
+}

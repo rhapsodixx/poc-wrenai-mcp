@@ -1,0 +1,18 @@
+# Reference copy of terracotta's shared Caddy stack (/opt/caddy). Only needed on a FRESH server; on the
+# existing server Caddy already runs and serves other apps too, so never `docker compose down` it from here.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./data:/data
+      - ./config:/config
+    networks:
+      - web
+networks:
+  web:
+    external: true

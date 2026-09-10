@@ -1,0 +1,5 @@
+# LibreChat block — managed by librechat/deploy.sh. EDIT IN PLACE (single-file bind mount): see CLAUDE.md "Caddy gotchas".
+librechat.kamisamanosumopod.my.id {
+	import block_bots
+	reverse_proxy librechat:3080
+}

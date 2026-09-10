@@ -19,3 +19,7 @@ else
   ssh terracotta 'cd /opt/wren && docker compose up -d --build'
 fi
 ssh terracotta 'cd /opt/wren && docker compose logs --tail 30 wren'
+# Pull the compiled manifest back so the repo holds both source YAML and the served mdl.json.
+sleep 5
+rsync -az terracotta:/opt/wren/project/target/ wren-project/target/
+echo "pulled wren-project/target/mdl.json ($(wc -c < wren-project/target/mdl.json) bytes)"

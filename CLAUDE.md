@@ -20,11 +20,16 @@ Docs: https://docs.getwren.ai/oss · Repo: https://github.com/Canner/WrenAI (CLI
 ```
 CLAUDE.md
 README.md               # how to connect Claude Code / Codex / Claude Desktop / ChatGPT
+RESTORE.md              # fresh-server / disaster-recovery runbook
+.env.example            # documented keys for .env
 knowledge-sidora.md     # MDL explanation + sample prompts for the sidora connection (one file per connection)
 .env                    # secrets, NEVER commit (see keys below)
 deploy.sh               # rsync deploy/ + wren-project/ -> terracotta:/opt/wren, write server .env, compose up --build
 deploy/
-  Dockerfile            # python:3.12-slim + wrenai[postgres,mcp] + mcp<2 pin
+  Dockerfile            # python:3.12-slim + pip install -r requirements.lock.txt (exact versions)
+  requirements.lock.txt # pip freeze of a working container; wrenai 0.14.0, mcp 1.30 (mcp 2.x breaks wrenai)
+  caddy-apply.sh        # render Caddyfile.wren with the token, install on host+container inode, reload, smoke test
+  caddy-base/           # reference copy of the shared Caddy stack, only for a FRESH server
   docker-compose.yml    # service `wren`, joins external network `web`, mem_limit 1.5g, no host ports
   entrypoint.sh         # profile add -> context init (if missing) -> set-profile -> build -> serve mcp :8080
   connection.yml        # postgres profile, values from ${POSTGRES_*} env
@@ -37,7 +42,7 @@ wren-project/           # THE Wren project (schema_version 5). Add MDL here.
   relationships.yml
   views/  cubes/        # add named SQL views / pre-aggregation cubes here
   knowledge/rules|glossary|metrics|caveats|sql
-  target/               # build output (gitignored, built inside the container)
+  target/mdl.json       # compiled manifest, built inside the container and pulled back by deploy.sh (committed)
 ```
 
 `.env` keys: `terracotta_ip|username|password` (SSH fallback; key auth is installed), `SUPABASE_DB_PASSWORD`,
@@ -104,12 +109,15 @@ claude mcp add --transport http wren https://wren.kamisamanosumopod.my.id/mcp \
 Smoke test: POST a JSON-RPC `initialize` body to `/mcp` → 401 without auth, 200 `text/event-stream` with the bearer
 header, 200 via `/t/$WREN_MCP_TOKEN/mcp`, 401 via `/t/wrong/mcp`.
 
+Fresh server or broken container: follow `RESTORE.md`.
+
 ## Editing the MDL (the normal loop)
 
 1. Edit YAML under `wren-project/` (models, `relationships.yml`, `views/`, `cubes/`, `knowledge/`).
    Add `properties.description` to models/columns — validate warns when missing and agents answer better with them.
 2. `./deploy.sh --no-build` → rsyncs the project, container restarts, `entrypoint.sh` runs `wren context build`.
    Build errors show in `docker compose logs wren`; the server keeps serving the last good `target/mdl.json`.
+   `deploy.sh` then pulls `target/mdl.json` back so the repo always holds the manifest actually being served.
 3. New tables in Supabase: `ssh terracotta 'docker exec -i wren python -' < scripts/generate_models.py`, then
    `rsync -az --exclude target/ terracotta:/opt/wren/project/ wren-project/` and review the diff.
    Existing descriptions are preserved; everything else is regenerated. Edit `SCHEMAS` in the script for more schemas.
@@ -118,6 +126,7 @@ header, 200 via `/t/$WREN_MCP_TOKEN/mcp`, 401 via `/t/wrong/mcp`.
 ## Deliberate simplifications
 - No `memory` extra (pulls PyTorch, +2 GB). Recall tools fall back to plain reads of `knowledge/`. Add `memory-onnx` if recall matters.
 - MCP server is read-only (`store_query` disabled). Add `--allow-write` in `entrypoint.sh` to let agents save queries.
-- `mcp<2` pin: wrenai 0.14.0 still imports `mcp.server.fastmcp` (removed in mcp 2.x). Drop the pin when wrenai upgrades.
+- Dependencies are frozen in `deploy/requirements.lock.txt` (wrenai 0.14.0 still imports `mcp.server.fastmcp`, removed in
+  mcp 2.x). Upgrade procedure in `RESTORE.md`.
 - Auth is a single shared bearer token in Caddy, accepted as header or URL path segment. Rotate by editing `.env`, then
   the Caddyfile block on host **and** through the container (see gotcha), reload, and re-register every client.

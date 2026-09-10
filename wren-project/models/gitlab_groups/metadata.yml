@@ -3,6 +3,8 @@ table_reference:
   catalog: ''
   schema: public
   table: gitlab_groups
+properties:
+  description: GitLab groups being synced for MR metrics. Reference table, not joined to metrics.
 columns:
 - name: id
   type: UUID
@@ -10,12 +12,16 @@ columns:
 - name: gitlab_group_id
   type: INT
   not_null: true
+  properties:
+    description: Numeric GitLab group id.
 - name: name
   type: TEXT
   not_null: true
 - name: path
   type: TEXT
   not_null: true
+  properties:
+    description: GitLab group path.
 - name: created_at
   type: TIMESTAMPTZ
   not_null: true

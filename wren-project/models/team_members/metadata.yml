@@ -3,6 +3,9 @@ table_reference:
   catalog: ''
   schema: public
   table: team_members
+properties:
+  description: People on the engineering team, one row per person, linked to a team via group_id. Soft-deleted rows have deleted_at
+    set.
 columns:
 - name: id
   type: UUID
@@ -10,21 +13,35 @@ columns:
 - name: full_name
   type: TEXT
   not_null: true
+  properties:
+    description: Display name.
 - name: gitlab_email
   type: TEXT
   not_null: true
+  properties:
+    description: GitLab identity used to attribute merge requests.
 - name: group_id
   type: UUID
   not_null: true
+  properties:
+    description: Team the member belongs to (groups.id).
 - name: employee_type
   type: TEXT
   not_null: true
+  properties:
+    description: Employment type, e.g. full-time.
 - name: contract_start_date
   type: DATE
+  properties:
+    description: Contract start; NULL if unknown.
 - name: contract_end_date
   type: DATE
+  properties:
+    description: Contract end; set only for fixed-term contracts.
 - name: deleted_at
   type: TIMESTAMPTZ
+  properties:
+    description: Soft delete timestamp. Active members have NULL.
 - name: created_at
   type: TIMESTAMPTZ
   not_null: true
@@ -33,4 +50,6 @@ columns:
   not_null: true
 - name: gitlab_username
   type: TEXT
+  properties:
+    description: GitLab handle.
 primary_key: id

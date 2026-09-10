@@ -3,6 +3,9 @@ table_reference:
   catalog: ''
   schema: public
   table: cc_snapshots
+properties:
+  description: 'Monthly Claude Code adoption per team member: lines of AI-generated code accepted. One row per member per
+    month.'
 columns:
 - name: id
   type: UUID
@@ -10,12 +13,18 @@ columns:
 - name: team_member_id
   type: UUID
   not_null: true
+  properties:
+    description: The member (team_members.id).
 - name: month
   type: DATE
   not_null: true
+  properties:
+    description: First day of the month.
 - name: lines_adopted
   type: INT
   not_null: true
+  properties:
+    description: Lines of Claude Code output the member accepted that month.
 - name: created_at
   type: TIMESTAMPTZ
   not_null: true

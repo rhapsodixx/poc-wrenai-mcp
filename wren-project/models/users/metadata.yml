@@ -3,6 +3,8 @@ table_reference:
   catalog: ''
   schema: public
   table: users
+properties:
+  description: Dashboard login accounts (Supabase Auth). Not team members; empty today.
 columns:
 - name: id
   type: UUID
@@ -10,6 +12,8 @@ columns:
 - name: auth_id
   type: UUID
   not_null: true
+  properties:
+    description: Supabase Auth user id.
 - name: name
   type: TEXT
   not_null: true
@@ -19,6 +23,8 @@ columns:
 - name: role
   type: TEXT
   not_null: true
+  properties:
+    description: Application role.
 - name: last_login
   type: TIMESTAMPTZ
 - name: created_at

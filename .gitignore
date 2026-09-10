@@ -3,9 +3,6 @@
 .env.*
 !.env.example
 
-# Wren build output (built inside the container)
-wren-project/target/
-
 # python
 __pycache__/
 *.py[cod]

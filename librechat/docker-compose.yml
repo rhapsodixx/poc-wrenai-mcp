@@ -1,0 +1,37 @@
+services:
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: librechat
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3080
+      - MONGO_URI=mongodb://mongo:27017/LibreChat
+      - CONFIG_PATH=/app/librechat.yaml
+    volumes:
+      - ./librechat.yaml:/app/librechat.yaml:ro
+      - ./data/images:/app/client/public/images
+      - ./data/uploads:/app/uploads
+      - ./data/logs:/app/api/logs
+    depends_on:
+      - mongo
+    mem_limit: 1g
+    networks:
+      - web
+      - default
+  mongo:
+    image: mongo:8.0
+    container_name: librechat-mongo
+    restart: unless-stopped
+    # ponytail: 256 MB WiredTiger cache; default is half of host RAM minus 1 GB
+    command: mongod --noauth --wiredTigerCacheSizeGB 0.25
+    volumes:
+      - ./data/mongo:/data/db
+    mem_limit: 512m
+    networks:
+      - default
+networks:
+  web:
+    external: true

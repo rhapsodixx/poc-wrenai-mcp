@@ -1,2 +1,2 @@
 # Compiled MDL — rebuild with `wren context build`
-target/
+# target/ is committed on purpose: deploy.sh pulls the served mdl.json back

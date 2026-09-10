@@ -3,6 +3,9 @@ table_reference:
   catalog: ''
   schema: public
   table: mr_snapshots
+properties:
+  description: Monthly GitLab merge-request metrics per team member. One row per member per month; month is the first day
+    of the month.
 columns:
 - name: id
   type: UUID
@@ -10,25 +13,41 @@ columns:
 - name: team_member_id
   type: UUID
   not_null: true
+  properties:
+    description: The member these metrics belong to (team_members.id).
 - name: month
   type: DATE
   not_null: true
+  properties:
+    description: First day of the month the metrics cover.
 - name: mrs_created
   type: INT
   not_null: true
+  properties:
+    description: Merge requests the member opened that month.
 - name: mrs_merged
   type: INT
   not_null: true
+  properties:
+    description: Merge requests by the member merged that month.
 - name: approvals_given
   type: INT
   not_null: true
+  properties:
+    description: Approvals/reviews the member gave to others that month.
 - name: avg_time_to_merge_hours
   type: DECIMAL(8, 2)
+  properties:
+    description: Mean hours from MR open to merge. Not populated yet (NULL everywhere).
 - name: avg_review_turnaround_hours
   type: DECIMAL(8, 2)
+  properties:
+    description: Mean hours to respond to review requests. Not populated yet (NULL everywhere).
 - name: synced_at
   type: TIMESTAMPTZ
   not_null: true
+  properties:
+    description: When the row was last pulled from GitLab.
 - name: created_at
   type: TIMESTAMPTZ
   not_null: true
