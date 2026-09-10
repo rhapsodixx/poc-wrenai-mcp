@@ -16,9 +16,9 @@ Two URL forms, same token:
 | Form | URL | Use with |
 |---|---|---|
 | Header | `https://wren.kamisamanosumopod.my.id/mcp` + `Authorization: Bearer <token>` | Claude Code, Codex, `mcp-remote` |
-| Path | `https://wren.kamisamanosumopod.my.id/t/<token>/mcp` | Clients that cannot send custom headers: ChatGPT, Claude Desktop connector |
+| Path | `https://wren.kamisamanosumopod.my.id/t/<token>/mcp` | Clients that cannot send custom headers: chatgpt.com web connectors, Claude Desktop custom connector |
 
-The path form exists because ChatGPT and the Claude Desktop "custom connector" only support OAuth or no auth.
+The path form exists because the chatgpt.com connector form and the Claude Desktop "custom connector" only support OAuth or no auth.
 Treat that URL like a password (it lands in URL logs). Rotate the token if it leaks (see CLAUDE.md).
 
 ---
@@ -76,13 +76,41 @@ Two options.
 Note `Authorization:${AUTH_HEADER}` has no space after the colon; the space lives in the env var on purpose
 (Claude Desktop mangles spaces inside `args`). Requires Node.js.
 
-## ChatGPT (desktop and web, Plus/Pro/Business/Enterprise/Edu)
+## ChatGPT
+
+**Plan limitation (verified 2026-09-09 on a Plus account):** ChatGPT Plus cannot expose MCP servers inside a
+regular ChatGPT chat. The MCP entry under Plugins connects fine (the server logs a full handshake and `tools/list`)
+but the chat model reports "the Wren MCP isn't exposed in this chat session", and the custom-connector
+Developer mode is gated to Pro / Business / Enterprise / Edu in practice. Options for Plus users:
+
+- **Codex** (included with Plus, MCP-capable): follow the Codex section above. Codex CLI, the Codex desktop app,
+  and the Codex mode inside the ChatGPT app all read the same `~/.codex/config.toml`.
+- **Claude Desktop or Claude Code**: sections above, both verified.
+- **Paste results**: run the question in one of those clients and paste the table into ChatGPT for analysis.
+
+### ChatGPT desktop → Plugins → MCPs (works for Codex mode only)
+
+Settings → **Plugins** → **MCPs** tab → **Add** → streamable HTTP:
+
+| Field | Value |
+|---|---|
+| Name | `wren` |
+| URL | `https://wren.kamisamanosumopod.my.id/mcp` |
+| Bearer token env var | *leave empty* (it wants an env var **name**, not the token) |
+| Headers | key `Authorization`, value `Bearer <token>` |
+| Headers from environment variables | *leave empty* |
+
+The MCPs tab should then show 17 tools. Use it from a Codex thread with the MCP toggled on.
+
+### chatgpt.com web connector (Pro / Business / Enterprise / Edu)
+
+The connector form has no header field, so use the path form:
 
 1. Settings → **Apps & Connectors** (older builds: **Security and login**) → enable **Developer mode**.
 2. Connectors → **Create** → name `wren`, URL `https://wren.kamisamanosumopod.my.id/t/<token>/mcp`,
    Authentication **No authentication** → Create.
-3. In a chat, open the **+** / tools menu, enable the `wren` connector, then ask. Developer mode exposes all
-   tools; `search`/`fetch` are not required.
+3. In a chat, open the **+** / tools menu, enable `wren`, then ask. Developer mode exposes all tools;
+   `search`/`fetch` are not required.
 
 ---
 
